@@ -98,7 +98,33 @@ echo "<br>";
 
 
 //SQL sentens
-	$stmt2 = $mysql->prepare("SELECT id, Login, Name, reserv_date, label_genre, description, time_created FROM Reservation ORDER BY time_created DESC LIMIT 10");
+	$stmt2 = $mysql->prepare("SELECT id, Login, Name, reserv_date, label_genre, description, time_created FROM Reservation WHERE deleted IS NULL ORDER BY time_created DESC LIMIT 10");
+	
+		// IF THERE IS ?DELITE=ROW_ID in the url
+	
+	if(isset($_GET["delete"])){
+		
+		echo "Deleting row with id:".$_GET["delete"];
+		
+		// NOW() = current date-time
+		$stmt = $mysql->prepare("UPDATE Reservation SET deleted=NOW() WHERE id = ?");
+		
+		echo $mysql->error;
+		
+		//replace the ?
+		$stmt->bind_param("i", $_GET["delete"]);
+		
+		if($stmt->execute()){
+			echo "deleted successfully";
+		}else{
+			echo $stmt->error;
+		}
+		
+		//closes the statement, so others can use connection
+		$stmt->close();
+		
+	}
+	
 	
 	//if error in sentence
 	echo $mysql->error;
@@ -123,6 +149,7 @@ echo "<br>";
 			$table2_html .="<th>Type</th>";
 			$table2_html .="<th>Description</th>";
 			$table2_html .="<th>Time</th>";
+			$table2_html .="<th>Delete ?</th>";
 		
 		$table2_html .="</tr>"; //end row
 	
@@ -143,6 +170,7 @@ echo "<br>";
 			$table2_html .="<td>".$label_genre."</td>";
 			$table2_html .="<td>".$description."</td>";
 			$table2_html .="<td>".$time_created."</td>";
+			$table2_html .="<td><a href='?delete=".$id."'>X</a></td>";
 			
 		$table2_html .="</tr>"; //end row
 	}
